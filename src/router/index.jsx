@@ -32,7 +32,7 @@ const createRoute = ({
   if (index) {
     configPath = "/";
   } else {
-    configPath = path.startsWith('/') ? path : `/${path}`;
+    configPath = path && path.startsWith('/') ? path : `/${path}`;
   }
 
   const config = getRouteConfig(configPath);
@@ -70,10 +70,12 @@ const mainRoutes = [
     path: "students",
     element: <Students />,
   }),
-  createRoute({
+createRoute({
     path: "grades",
     element: <Grades />,
-path: "attendance",
+  }),
+  createRoute({
+    path: "attendance",
     element: <Attendance />,
   }),
   createRoute({
@@ -83,8 +85,6 @@ path: "attendance",
   createRoute({
     path: "reports",
     element: <Reports />,
-  }),
-  createRoute({
   }),
   createRoute({
     path: "*",
