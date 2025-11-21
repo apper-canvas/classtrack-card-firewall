@@ -50,18 +50,18 @@ const Students = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(student => 
-        student.firstName.toLowerCase().includes(query) ||
-        student.lastName.toLowerCase().includes(query) ||
-        student.studentId.toLowerCase().includes(query) ||
-        student.email.toLowerCase().includes(query)
+student.first_name_c.toLowerCase().includes(query) ||
+        student.last_name_c.toLowerCase().includes(query) ||
+        student.student_id_c.toLowerCase().includes(query) ||
+        student.email_c.toLowerCase().includes(query)
       );
     }
 
     // Apply status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(student => student.status === statusFilter);
+if (statusFilter !== "all") {
+      filtered = filtered.filter(student => student.status_c === statusFilter);
     }
-
+    
     // Apply grade filter
     if (gradeFilter !== "all") {
       filtered = filtered.filter(student => student.gradeLevel === gradeFilter);

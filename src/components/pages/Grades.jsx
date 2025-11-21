@@ -29,7 +29,7 @@ const Grades = () => {
         gradeService.getAll()
       ]);
       
-      setStudents(studentsData.filter(s => s.status === "active"));
+setStudents(studentsData.filter(s => s.status_c === "active"));
       setGrades(gradesData);
     } catch (err) {
       setError("Failed to load grades data. Please try again.");
@@ -44,59 +44,59 @@ const Grades = () => {
   }, []);
 
   const getStudentGrade = (studentId, subject) => {
-    return grades.find(g => g.studentId === studentId && g.subject === subject);
+return grades.find(g => g.student_id_c?.Id === studentId && g.subject_c === subject);
   };
 
-  const getGradeBadgeVariant = (grade) => {
+const getGradeBadgeVariant = (grade) => {
     if (!grade) return "default";
-    if (grade.percentage >= 90) return "success";
-    if (grade.percentage >= 80) return "info";
-    if (grade.percentage >= 70) return "warning";
+    if (grade.percentage_c >= 90) return "success";
+    if (grade.percentage_c >= 80) return "info";
+    if (grade.percentage_c >= 70) return "warning";
     return "error";
   };
 
-  const calculateStudentAverage = (studentId) => {
-    const studentGrades = grades.filter(g => g.studentId === studentId);
+const calculateStudentAverage = (studentId) => {
+    const studentGrades = grades.filter(g => g.student_id_c?.Id === studentId);
     if (studentGrades.length === 0) return 0;
     
-    const total = studentGrades.reduce((sum, grade) => sum + grade.percentage, 0);
+    const total = studentGrades.reduce((sum, grade) => sum + grade.percentage_c, 0);
     return Math.round(total / studentGrades.length);
   };
 
-  const calculateSubjectAverage = (subject) => {
-    const subjectGrades = grades.filter(g => g.subject === subject);
+const calculateSubjectAverage = (subject) => {
+    const subjectGrades = grades.filter(g => g.subject_c === subject);
     if (subjectGrades.length === 0) return 0;
     
-    const total = subjectGrades.reduce((sum, grade) => sum + grade.percentage, 0);
+    const total = subjectGrades.reduce((sum, grade) => sum + grade.percentage_c, 0);
     return Math.round(total / subjectGrades.length);
   };
 
-  const handleGradeClick = (student, subject) => {
-    const existingGrade = getStudentGrade(student.studentId, subject);
+const handleGradeClick = (student, subject) => {
+    const existingGrade = getStudentGrade(student.Id, subject);
     const newScore = prompt(
-      `Enter grade for ${student.firstName} ${student.lastName} - ${subject}:`,
-      existingGrade ? existingGrade.score.toString() : ""
+      `Enter grade for ${student.first_name_c} ${student.last_name_c} - ${subject}:`,
+      existingGrade ? existingGrade.score_c.toString() : ""
     );
     
     if (newScore !== null && newScore.trim() !== "") {
       const score = parseFloat(newScore);
       if (!isNaN(score) && score >= 0 && score <= 100) {
-        saveGrade(student.studentId, subject, score, 100);
+        saveGrade(student.Id, subject, score, 100);
       } else {
         toast.error("Please enter a valid score between 0 and 100");
       }
     }
   };
 
-  const saveGrade = async (studentId, subject, score, maxScore) => {
+const saveGrade = async (studentId, subject, score, maxScore) => {
     try {
       const gradeData = {
-        studentId,
-        subject,
-        score,
-        maxScore,
-        semester: "Fall 2024",
-        date: new Date().toISOString().split('T')[0]
+        student_id_c: studentId,
+        subject_c: subject,
+        score_c: score,
+        max_score_c: maxScore,
+        semester_c: "Fall 2024",
+        date_c: new Date().toISOString().split('T')[0]
       };
 
       const existingGrade = getStudentGrade(studentId, subject);
@@ -198,27 +198,27 @@ const Grades = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {students.map((student) => {
-                    const studentAverage = calculateStudentAverage(student.studentId);
+{students.map((student) => {
+                    const studentAverage = calculateStudentAverage(student.Id);
                     return (
                       <tr key={student.Id} className="hover:bg-gray-50 transition-colors duration-150">
                         <td className="px-4 py-4">
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
                               <span className="text-xs font-semibold text-primary-600">
-                                {student.firstName[0]}{student.lastName[0]}
+                                {student.first_name_c[0]}{student.last_name_c[0]}
                               </span>
                             </div>
                             <div>
                               <div className="font-medium text-gray-900">
-                                {student.firstName} {student.lastName}
+                                {student.first_name_c} {student.last_name_c}
                               </div>
-                              <div className="text-sm text-gray-500">{student.studentId}</div>
+                              <div className="text-sm text-gray-500">{student.student_id_c}</div>
                             </div>
                           </div>
                         </td>
                         {subjects.map((subject) => {
-                          const grade = getStudentGrade(student.studentId, subject);
+const grade = getStudentGrade(student.Id, subject);
                           return (
                             <td key={subject} className="px-4 py-4 text-center">
                               <button
@@ -227,7 +227,7 @@ const Grades = () => {
                               >
                                 {grade ? (
                                   <Badge variant={getGradeBadgeVariant(grade)}>
-                                    {grade.percentage}%
+                                    {grade.percentage_c}%
                                   </Badge>
                                 ) : (
                                   <div className="w-8 h-8 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center hover:border-primary-400 hover:bg-primary-50 transition-colors duration-150">

@@ -29,7 +29,7 @@ const Attendance = () => {
         attendanceService.getAll()
       ]);
       
-      setStudents(studentsData.filter(s => s.status === "active"));
+setStudents(studentsData.filter(s => s.status_c === "active"));
       setAttendance(attendanceData);
     } catch (err) {
       setError("Failed to load attendance data. Please try again.");
@@ -48,9 +48,9 @@ const Attendance = () => {
     return Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Monday to Friday
   };
 
-  const getAttendanceRecord = (studentId, date) => {
+const getAttendanceRecord = (studentId, date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    return attendance.find(a => a.studentId === studentId && a.date === dateStr);
+    return attendance.find(a => a.student_id_c?.Id === studentId && a.date_c === dateStr);
   };
 
   const getStatusBadgeVariant = (status) => {
@@ -63,19 +63,19 @@ const Attendance = () => {
     return variants[status] || "default";
   };
 
-  const handleAttendanceClick = async (student, date) => {
+const handleAttendanceClick = async (student, date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const existing = getAttendanceRecord(student.studentId, date);
+    const existing = getAttendanceRecord(student.Id, date);
     
     const statuses = ["present", "absent", "late", "excused"];
-    const currentIndex = existing ? statuses.indexOf(existing.status) : -1;
+    const currentIndex = existing ? statuses.indexOf(existing.status_c) : -1;
     const nextIndex = (currentIndex + 1) % statuses.length;
     const newStatus = statuses[nextIndex];
 
     try {
-      await attendanceService.markAttendance(student.studentId, dateStr, newStatus);
+      await attendanceService.markAttendance(student.Id, dateStr, newStatus);
       await loadData();
-      toast.success(`Marked ${student.firstName} as ${newStatus} for ${format(date, "MMM dd")}`);
+      toast.success(`Marked ${student.first_name_c} as ${newStatus} for ${format(date, "MMM dd")}`);
     } catch (err) {
       toast.error("Failed to update attendance");
       console.error("Error updating attendance:", err);
@@ -91,11 +91,11 @@ const Attendance = () => {
     let lateCount = 0;
     let excusedCount = 0;
 
-    weekDays.forEach(date => {
+weekDays.forEach(date => {
       students.forEach(student => {
-        const record = getAttendanceRecord(student.studentId, date);
+        const record = getAttendanceRecord(student.Id, date);
         if (record) {
-          switch (record.status) {
+          switch (record.status_c) {
             case "present":
               presentCount++;
               break;
@@ -114,7 +114,6 @@ const Attendance = () => {
         }
       });
     });
-
     const attendanceRate = totalPossible > 0 ? Math.round(((presentCount + excusedCount) / totalPossible) * 100) : 0;
 
     return {
@@ -255,9 +254,9 @@ const Attendance = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {students.map((student) => {
-                    const studentRecords = weekDays.map(day => getAttendanceRecord(student.studentId, day));
-                    const presentDays = studentRecords.filter(r => r && (r.status === "present" || r.status === "excused")).length;
+{students.map((student) => {
+                    const studentRecords = weekDays.map(day => getAttendanceRecord(student.Id, day));
+                    const presentDays = studentRecords.filter(r => r && (r.status_c === "present" || r.status_c === "excused")).length;
                     const weeklyRate = Math.round((presentDays / weekDays.length) * 100);
 
                     return (
@@ -266,19 +265,19 @@ const Attendance = () => {
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
                               <span className="text-xs font-semibold text-primary-600">
-                                {student.firstName[0]}{student.lastName[0]}
+                                {student.first_name_c[0]}{student.last_name_c[0]}
                               </span>
                             </div>
                             <div>
                               <div className="font-medium text-gray-900">
-                                {student.firstName} {student.lastName}
+                                {student.first_name_c} {student.last_name_c}
                               </div>
-                              <div className="text-sm text-gray-500">{student.studentId}</div>
+                              <div className="text-sm text-gray-500">{student.student_id_c}</div>
                             </div>
                           </div>
                         </td>
                         {weekDays.map((day) => {
-                          const record = getAttendanceRecord(student.studentId, day);
+const record = getAttendanceRecord(student.Id, day);
                           return (
                             <td key={day.toISOString()} className="px-4 py-4 text-center">
                               <button
@@ -286,8 +285,8 @@ const Attendance = () => {
                                 className="inline-flex items-center justify-center w-12 h-8 hover:scale-105 transition-transform duration-150"
                               >
                                 {record ? (
-                                  <Badge variant={getStatusBadgeVariant(record.status)} className="text-xs">
-                                    {record.status.charAt(0).toUpperCase()}
+                                  <Badge variant={getStatusBadgeVariant(record.status_c)} className="text-xs">
+                                    {record.status_c.charAt(0).toUpperCase()}
                                   </Badge>
                                 ) : (
                                   <div className="w-8 h-8 border-2 border-dashed border-gray-300 rounded flex items-center justify-center hover:border-primary-400 hover:bg-primary-50 transition-colors duration-150">

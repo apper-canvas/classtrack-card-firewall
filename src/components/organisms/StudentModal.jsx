@@ -5,35 +5,35 @@ import ApperIcon from "@/components/ApperIcon";
 import { cn } from "@/utils/cn";
 
 const StudentModal = ({ isOpen, onClose, student, onSave }) => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    studentId: "",
-    email: "",
-    phone: "",
-    gradeLevel: "",
-    class: "",
-    photoUrl: "",
-    enrollmentDate: "",
-    status: "active"
+const [formData, setFormData] = useState({
+    first_name_c: "",
+    last_name_c: "",
+    student_id_c: "",
+    email_c: "",
+    phone_c: "",
+    grade_level_c: "",
+    class_c: "",
+    photo_url_c: "",
+    enrollment_date_c: "",
+    status_c: "active"
   });
-  
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
+  const handleSave = onSave || (() => {});
   useEffect(() => {
     if (student) {
       setFormData({
-        firstName: student.firstName || "",
-        lastName: student.lastName || "",
-        studentId: student.studentId || "",
-        email: student.email || "",
-        phone: student.phone || "",
-        gradeLevel: student.gradeLevel || "",
-        class: student.class || "",
-        photoUrl: student.photoUrl || "",
-        enrollmentDate: student.enrollmentDate || "",
-        status: student.status || "active"
+        first_name_c: student.first_name_c || "",
+        last_name_c: student.last_name_c || "",
+        student_id_c: student.student_id_c || "",
+        email_c: student.email_c || "",
+        phone_c: student.phone_c || "",
+        grade_level_c: student.grade_level_c || "",
+        class_c: student.class_c || "",
+        photo_url_c: student.photo_url_c || "",
+        enrollment_date_c: student.enrollment_date_c || "",
+        status_c: student.status_c || "active"
       });
     } else {
       setFormData({
@@ -55,16 +55,15 @@ const StudentModal = ({ isOpen, onClose, student, onSave }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!formData.studentId.trim()) newErrors.studentId = "Student ID is required";
-    if (!formData.gradeLevel.trim()) newErrors.gradeLevel = "Grade level is required";
-    if (!formData.class.trim()) newErrors.class = "Class is required";
+if (!formData.first_name_c.trim()) newErrors.first_name_c = "First name is required";
+    if (!formData.last_name_c.trim()) newErrors.last_name_c = "Last name is required";
+    if (!formData.student_id_c.trim()) newErrors.student_id_c = "Student ID is required";
+    if (!formData.grade_level_c.trim()) newErrors.grade_level_c = "Grade level is required";
+    if (!formData.class_c.trim()) newErrors.class_c = "Class is required";
     
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+    if (formData.email_c && !/\S+@\S+\.\S+/.test(formData.email_c)) {
+      newErrors.email_c = "Please enter a valid email address";
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -192,12 +191,12 @@ const StudentModal = ({ isOpen, onClose, student, onSave }) => {
               />
             </div>
 
-            <FormField
+<FormField
               label="Photo URL"
               type="url"
-              value={formData.photoUrl}
-              onChange={(e) => handleChange("photoUrl", e.target.value)}
-              error={errors.photoUrl}
+              value={formData.photo_url_c}
+              onChange={(e) => handleChange("photo_url_c", e.target.value)}
+              error={errors.photo_url_c}
               placeholder="https://example.com/photo.jpg"
             />
 

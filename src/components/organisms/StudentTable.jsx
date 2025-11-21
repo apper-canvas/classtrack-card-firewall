@@ -51,41 +51,41 @@ const StudentTable = ({ students, onEdit, onDelete, onView }) => {
           </thead>
           <tbody>
             {students.map((student) => (
-              <tr key={student.Id}>
+<tr key={student.Id}>
                 <td>
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
-                      {student.photoUrl ? (
+                      {student.photo_url_c ? (
                         <img 
-                          src={student.photoUrl} 
-                          alt={`${student.firstName} ${student.lastName}`}
+                          src={student.photo_url_c} 
+                          alt={`${student.first_name_c} ${student.last_name_c}`}
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
                         <span className="text-sm font-semibold text-primary-600">
-                          {student.firstName[0]}{student.lastName[0]}
+                          {student.first_name_c[0]}{student.last_name_c[0]}
                         </span>
                       )}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">
-                        {student.firstName} {student.lastName}
+<div className="font-medium text-gray-900">
+                        {student.first_name_c} {student.last_name_c}
                       </div>
-                      {student.email && (
-                        <div className="text-sm text-gray-500">{student.email}</div>
+                      {student.email_c && (
+                        <div className="text-sm text-gray-500">{student.email_c}</div>
                       )}
                     </div>
                   </div>
                 </td>
-                <td className="font-mono text-sm">{student.studentId}</td>
-                <td>{student.class}</td>
-                <td>{student.gradeLevel}</td>
+                <td className="font-mono text-sm">{student.student_id_c}</td>
+                <td>{student.class_c}</td>
+                <td>{student.grade_level_c}</td>
                 <td>
-                  <Badge variant={getStatusVariant(student.status)}>
-                    {student.status}
+                  <Badge variant={getStatusVariant(student.status_c)}>
+                    {student.status_c}
                   </Badge>
                 </td>
-                <td className="text-gray-600">{formatDate(student.enrollmentDate)}</td>
+                <td className="text-gray-600">{formatDate(student.enrollment_date_c)}</td>
                 <td>
                   <div className="flex items-center space-x-2">
                     <Button

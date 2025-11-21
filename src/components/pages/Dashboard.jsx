@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from "react";
-import Header from "@/components/organisms/Header";
-import StatCard from "@/components/molecules/StatCard";
-import Button from "@/components/atoms/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/atoms/Card";
-import Badge from "@/components/atoms/Badge";
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
+import { toast } from "react-toastify";
+import gradeService from "@/services/api/gradeService";
+import studentService from "@/services/api/studentService";
+import attendanceService from "@/services/api/attendanceService";
 import ApperIcon from "@/components/ApperIcon";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
-import studentService from "@/services/api/studentService";
-import gradeService from "@/services/api/gradeService";
-import attendanceService from "@/services/api/attendanceService";
-import { toast } from "react-toastify";
+import Button from "@/components/atoms/Button";
+import Badge from "@/components/atoms/Badge";
+import Header from "@/components/organisms/Header";
+import Students from "@/components/pages/Students";
+import Attendance from "@/components/pages/Attendance";
+import Grades from "@/components/pages/Grades";
+import StatCard from "@/components/molecules/StatCard";
 
 const Dashboard = () => {
   const [students, setStudents] = useState([]);
@@ -46,31 +49,31 @@ const Dashboard = () => {
   }, []);
 
   const calculateStats = () => {
-    const totalStudents = students.length;
-    const activeStudents = students.filter(s => s.status === "active").length;
+const totalStudents = students.length;
+    const activeStudents = students.filter(s => s.status_c === "active").length;
     
     // Calculate average grade
-    const validGrades = grades.filter(g => g.percentage && g.percentage > 0);
+const validGrades = grades.filter(g => g.percentage_c && g.percentage_c > 0);
     const averageGrade = validGrades.length > 0 
-      ? Math.round(validGrades.reduce((sum, g) => sum + g.percentage, 0) / validGrades.length)
+      ? Math.round(validGrades.reduce((sum, g) => sum + g.percentage_c, 0) / validGrades.length)
       : 0;
 
     // Calculate attendance rate
-    const presentRecords = attendance.filter(a => a.status === "present" || a.status === "excused").length;
+const presentRecords = attendance.filter(a => a.status_c === "present" || a.status_c === "excused").length;
     const attendanceRate = attendance.length > 0 
-      ? Math.round((presentRecords / attendance.length) * 100)
+      ? Math.round((presentRecords / attendance.length) * 100) 
       : 100;
 
-    // Find at-risk students (average grade below 70%)
-    const studentGradeAverages = students.map(student => {
-      const studentGrades = grades.filter(g => g.studentId === student.studentId);
+    // Recent activity
+    const recentStudents = students.slice(0, 5).map(student => {
+      const studentGrades = grades.filter(g => g.student_id_c?.Id === student.Id);
       const avgGrade = studentGrades.length > 0 
-        ? studentGrades.reduce((sum, g) => sum + g.percentage, 0) / studentGrades.length
-        : 100;
+        ? studentGrades.reduce((sum, g) => sum + g.percentage_c, 0) / studentGrades.length 
+        : 0;
       return { ...student, avgGrade };
-    });
+});
     
-    const atRiskStudents = studentGradeAverages.filter(s => s.avgGrade < 70 && s.status === "active").length;
+    const atRiskStudents = recentStudents.filter(s => s.avgGrade < 70 && s.status_c === "active").length;
 
     return {
       totalStudents,
@@ -78,7 +81,7 @@ const Dashboard = () => {
       averageGrade,
       attendanceRate,
       atRiskStudents,
-      studentGradeAverages: studentGradeAverages.filter(s => s.status === "active").slice(0, 5)
+      studentGradeAverages: recentStudents.filter(s => s.status_c === "active").slice(0, 5)
     };
   };
 
@@ -86,9 +89,9 @@ const Dashboard = () => {
     const recentGrades = grades
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 5)
-      .map(grade => ({
+.map(grade => ({
         type: "grade",
-        description: `Grade added for ${grade.subject}`,
+        description: `Grade added for ${grade.subject_c}`,
         value: `${grade.percentage}%`,
         date: grade.date,
         status: grade.percentage >= 70 ? "success" : "warning"

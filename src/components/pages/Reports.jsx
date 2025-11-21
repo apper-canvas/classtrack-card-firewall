@@ -83,13 +83,13 @@ const Reports = () => {
     
     // Overall stats
     const totalStudents = filteredStudents.length;
-    const activeStudents = filteredStudents.filter(s => s.status === "active").length;
+const activeStudents = filteredStudents.filter(s => s.status_c === "active").length;
     
     // Grade statistics
     const studentGradeAverages = filteredStudents.map(student => {
       const studentGrades = grades.filter(g => 
-        g.studentId === student.studentId &&
-        new Date(g.date) >= startDate
+        g.student_id_c?.Id === student.Id &&
+        new Date(g.date_c) >= startDate
       );
       
       const avgGrade = studentGrades.length > 0 
@@ -103,7 +103,7 @@ const Reports = () => {
       ? Math.round(studentGradeAverages.reduce((sum, s) => sum + s.avgGrade, 0) / studentGradeAverages.length)
       : 0;
 
-    const highPerformers = studentGradeAverages.filter(s => s.avgGrade >= 90).length;
+const highPerformers = studentGradeAverages.filter(s => s.avgGrade >= 90).length;
     const atRiskStudents = studentGradeAverages.filter(s => s.avgGrade < 70 && s.avgGrade > 0).length;
 
     // Attendance statistics
@@ -131,10 +131,10 @@ const Reports = () => {
     const startDate = getDateRangeFilter();
     
     return subjects.map(subject => {
-      const subjectGrades = grades.filter(g => 
-        g.subject === subject &&
-        new Date(g.date) >= startDate &&
-        filteredStudents.some(s => s.studentId === g.studentId)
+const subjectGrades = grades.filter(g => 
+        g.subject_c === subject &&
+        new Date(g.date_c) >= startDate &&
+        filteredStudents.some(s => s.Id === g.student_id_c?.Id)
       );
       
       const average = subjectGrades.length > 0
@@ -149,9 +149,9 @@ const Reports = () => {
     const filteredStudents = getFilteredStudents();
     const startDate = getDateRangeFilter();
     
-    const attendanceInRange = attendance.filter(a => 
-      new Date(a.date) >= startDate &&
-      filteredStudents.some(s => s.studentId === a.studentId)
+const attendanceInRange = attendance.filter(a => 
+      new Date(a.date_c) >= startDate &&
+      filteredStudents.some(s => s.Id === a.student_id_c?.Id)
     );
 
     const groupedByStatus = {
@@ -195,8 +195,8 @@ const Reports = () => {
   const subjectPerformance = getSubjectPerformance();
   const attendanceTrends = getAttendanceTrends();
 
-  const uniqueClasses = [...new Set(students.map(s => s.class))];
-  const uniqueGrades = [...new Set(students.map(s => s.gradeLevel))];
+const uniqueClasses = [...new Set(students.map(s => s.class_c))];
+  const uniqueGrades = [...new Set(students.map(s => s.grade_level_c))];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -437,12 +437,12 @@ const Reports = () => {
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-medium text-gray-900">
-                            {student.firstName} {student.lastName}
+{student.first_name_c} {student.last_name_c}
                           </div>
-                          <div className="text-sm text-gray-500">{student.studentId}</div>
+                          <div className="text-sm text-gray-500">{student.student_id_c}</div>
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{student.class}</td>
-                        <td className="px-4 py-3 text-gray-600">{student.gradeLevel}</td>
+                        <td className="px-4 py-3 text-gray-600">{student.class_c}</td>
+                        <td className="px-4 py-3 text-gray-600">{student.grade_level_c}</td>
                         <td className="px-4 py-3 text-center">
                           <span className={`font-bold ${
                             student.avgGrade >= 90 ? "text-green-600" :

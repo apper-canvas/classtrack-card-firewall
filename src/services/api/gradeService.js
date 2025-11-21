@@ -1,94 +1,284 @@
-import mockGrades from "@/services/mockData/grades.json";
+import { getApperClient } from "@/services/apperClient";
+import { toast } from "react-toastify";
 
 class GradeService {
   constructor() {
-    this.storageKey = "classtrack_grades";
-    this.initializeData();
-  }
-
-  initializeData() {
-    const existingData = localStorage.getItem(this.storageKey);
-    if (!existingData) {
-      localStorage.setItem(this.storageKey, JSON.stringify(mockGrades));
-    }
-  }
-
-  async delay() {
-    return new Promise(resolve => setTimeout(resolve, Math.random() * 300 + 200));
+    this.tableName = "grades_c";
   }
 
   async getAll() {
-    await this.delay();
-    const data = localStorage.getItem(this.storageKey);
-    return data ? JSON.parse(data) : [];
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "subject_c"}},
+          {"field": {"Name": "score_c"}},
+          {"field": {"Name": "max_score_c"}},
+          {"field": {"Name": "percentage_c"}},
+          {"field": {"Name": "letter_grade_c"}},
+          {"field": {"Name": "date_c"}},
+          {"field": {"Name": "semester_c"}},
+          {"field": {"Name": "student_id_c"}}
+        ],
+        orderBy: [{"fieldName": "date_c", "sorttype": "DESC"}]
+      };
+
+      const response = await apperClient.fetchRecords(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching grades:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getById(id) {
-    await this.delay();
-    const grades = await this.getAll();
-    const grade = grades.find(g => g.Id === parseInt(id));
-    return grade ? { ...grade } : null;
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "subject_c"}},
+          {"field": {"Name": "score_c"}},
+          {"field": {"Name": "max_score_c"}},
+          {"field": {"Name": "percentage_c"}},
+          {"field": {"Name": "letter_grade_c"}},
+          {"field": {"Name": "date_c"}},
+          {"field": {"Name": "semester_c"}},
+          {"field": {"Name": "student_id_c"}}
+        ]
+      };
+
+      const response = await apperClient.getRecordById(this.tableName, parseInt(id), params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching grade ${id}:`, error?.response?.data?.message || error);
+      return null;
+    }
   }
 
   async getByStudentId(studentId) {
-    await this.delay();
-    const grades = await this.getAll();
-    return grades.filter(g => g.studentId === studentId);
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
+
+      // Convert studentId to student lookup ID if needed
+      let lookupId = studentId;
+      if (typeof studentId === 'string') {
+        // If it's a student_id_c string, we need to find the actual record ID
+        // For now, assume it's already the correct lookup ID
+        lookupId = parseInt(studentId);
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "subject_c"}},
+          {"field": {"Name": "score_c"}},
+          {"field": {"Name": "max_score_c"}},
+          {"field": {"Name": "percentage_c"}},
+          {"field": {"Name": "letter_grade_c"}},
+          {"field": {"Name": "date_c"}},
+          {"field": {"Name": "semester_c"}},
+          {"field": {"Name": "student_id_c"}}
+        ],
+        where: [{
+          "FieldName": "student_id_c",
+          "Operator": "EqualTo",
+          "Values": [lookupId]
+        }]
+      };
+
+      const response = await apperClient.fetchRecords(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching grades by student ID:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async create(gradeData) {
-    await this.delay();
-    const grades = await this.getAll();
-    const highestId = grades.reduce((max, grade) => Math.max(max, grade.Id), 0);
-    
-    const percentage = (gradeData.score / gradeData.maxScore) * 100;
-    const letterGrade = this.calculateLetterGrade(percentage);
-    
-    const newGrade = {
-      Id: highestId + 1,
-      ...gradeData,
-      percentage: Math.round(percentage * 100) / 100,
-      letterGrade,
-      date: gradeData.date || new Date().toISOString().split('T')[0]
-    };
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
 
-    const updatedGrades = [...grades, newGrade];
-    localStorage.setItem(this.storageKey, JSON.stringify(updatedGrades));
-    return { ...newGrade };
+      const percentage = (gradeData.score_c / gradeData.max_score_c) * 100;
+      const letterGrade = this.calculateLetterGrade(percentage);
+
+      // Only include updateable fields
+      const params = {
+        records: [{
+          Name: `${gradeData.subject_c} - ${gradeData.score_c}/${gradeData.max_score_c}`,
+          subject_c: gradeData.subject_c,
+          score_c: parseInt(gradeData.score_c),
+          max_score_c: parseInt(gradeData.max_score_c),
+          percentage_c: Math.round(percentage * 100) / 100,
+          letter_grade_c: letterGrade,
+          date_c: gradeData.date_c || new Date().toISOString().split('T')[0],
+          semester_c: gradeData.semester_c || "Fall 2024",
+          student_id_c: parseInt(gradeData.student_id_c)
+        }]
+      };
+
+      const response = await apperClient.createRecord(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} grades:`, failed);
+          failed.forEach(record => {
+            if (record.errors) {
+              record.errors.forEach(error => toast.error(`${error.fieldLabel}: ${error.message}`));
+            }
+            if (record.message) toast.error(record.message);
+          });
+        }
+
+        return successful.length > 0 ? successful[0].data : null;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error creating grade:", error?.response?.data?.message || error);
+      return null;
+    }
   }
 
   async update(id, gradeData) {
-    await this.delay();
-    const grades = await this.getAll();
-    const index = grades.findIndex(g => g.Id === parseInt(id));
-    
-    if (index === -1) {
-      throw new Error("Grade not found");
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
+
+      const percentage = (gradeData.score_c / gradeData.max_score_c) * 100;
+      const letterGrade = this.calculateLetterGrade(percentage);
+
+      // Only include updateable fields
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          Name: `${gradeData.subject_c} - ${gradeData.score_c}/${gradeData.max_score_c}`,
+          subject_c: gradeData.subject_c,
+          score_c: parseInt(gradeData.score_c),
+          max_score_c: parseInt(gradeData.max_score_c),
+          percentage_c: Math.round(percentage * 100) / 100,
+          letter_grade_c: letterGrade,
+          date_c: gradeData.date_c,
+          semester_c: gradeData.semester_c,
+          student_id_c: parseInt(gradeData.student_id_c)
+        }]
+      };
+
+      const response = await apperClient.updateRecord(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return null;
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} grades:`, failed);
+          failed.forEach(record => {
+            if (record.errors) {
+              record.errors.forEach(error => toast.error(`${error.fieldLabel}: ${error.message}`));
+            }
+            if (record.message) toast.error(record.message);
+          });
+        }
+
+        return successful.length > 0 ? successful[0].data : null;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error updating grade:", error?.response?.data?.message || error);
+      return null;
     }
-
-    const percentage = (gradeData.score / gradeData.maxScore) * 100;
-    const letterGrade = this.calculateLetterGrade(percentage);
-
-    const updatedGrade = {
-      ...grades[index],
-      ...gradeData,
-      Id: parseInt(id),
-      percentage: Math.round(percentage * 100) / 100,
-      letterGrade
-    };
-    grades[index] = updatedGrade;
-    
-    localStorage.setItem(this.storageKey, JSON.stringify(grades));
-    return { ...updatedGrade };
   }
 
   async delete(id) {
-    await this.delay();
-    const grades = await this.getAll();
-    const filteredGrades = grades.filter(g => g.Id !== parseInt(id));
-    
-    localStorage.setItem(this.storageKey, JSON.stringify(filteredGrades));
-    return { success: true };
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
+
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+
+      const response = await apperClient.deleteRecord(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return { success: false };
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} grades:`, failed);
+          failed.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+        }
+
+        return { success: successful.length === 1 };
+      }
+
+      return { success: false };
+    } catch (error) {
+      console.error("Error deleting grade:", error?.response?.data?.message || error);
+      return { success: false };
+    }
   }
 
   calculateLetterGrade(percentage) {
@@ -108,19 +298,59 @@ class GradeService {
   }
 
   async getGradesBySubject(subject) {
-    await this.delay();
-    const grades = await this.getAll();
-    return grades.filter(g => g.subject === subject);
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error("ApperClient not available");
+      }
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "subject_c"}},
+          {"field": {"Name": "score_c"}},
+          {"field": {"Name": "max_score_c"}},
+          {"field": {"Name": "percentage_c"}},
+          {"field": {"Name": "letter_grade_c"}},
+          {"field": {"Name": "date_c"}},
+          {"field": {"Name": "semester_c"}},
+          {"field": {"Name": "student_id_c"}}
+        ],
+        where: [{
+          "FieldName": "subject_c",
+          "Operator": "EqualTo",
+          "Values": [subject]
+        }]
+      };
+
+      const response = await apperClient.fetchRecords(this.tableName, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching grades by subject:", error?.response?.data?.message || error);
+      return [];
+    }
   }
 
   async getAverageGrade(studentId) {
-    await this.delay();
-    const grades = await this.getByStudentId(studentId);
-    if (grades.length === 0) return 0;
-    
-    const total = grades.reduce((sum, grade) => sum + grade.percentage, 0);
-    return Math.round((total / grades.length) * 100) / 100;
+    try {
+      const grades = await this.getByStudentId(studentId);
+      if (grades.length === 0) return 0;
+
+      const total = grades.reduce((sum, grade) => sum + (grade.percentage_c || 0), 0);
+      return Math.round((total / grades.length) * 100) / 100;
+    } catch (error) {
+      console.error("Error calculating average grade:", error);
+      return 0;
+    }
   }
 }
+
+export default new GradeService();
 
 export default new GradeService();
