@@ -50,6 +50,19 @@
       },
       "redirectOnDeny": "/login"
     }
+},
+  "/departments": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Departments page requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
   },
   "/reports": {
     "allow": {
